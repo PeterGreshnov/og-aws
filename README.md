@@ -57,6 +57,7 @@ Table of Contents
 | [Load Balancers](#load-balancers) | [📗](#load-balancer-basics) | [📘](#load-balancer-tips) | [📙](#load-balancer-gotchas-and-limitations) |
 | [Mobile Hub](#mobile-hub) | [📗](#mobile-hub-basics) | [📘](#mobile-hub-tips) | [📙](#mobile-hub-gotchas-and-limitations) |
 | [OpsWorks](#opsworks) | [📗](#opsworks-basics) | [📘](#opsworks-tips) | [📙](#opsworks-gotchas-and-limitations) |
+| [Quicksight](#quicksight) | [📗](#quicksight-basics) | | [📙](#quicksight-gotchas-and-limitations) |
 | [RDS](#rds) | [📗](#rds-basics) | [📘](#rds-tips) | [📙](#rds-gotchas-and-limitations) |
 | [RDS Aurora](#rds-aurora) | [📗](#rds-aurora-basics) | [📘](#rds-aurora-tips) | [📙](#rds-aurora-gotchas-and-limitations) |
 | [RDS Aurora MySQL](#rds-aurora-mysql) | [📗](#rds-aurora-mysql-basics) | [📘](#rds-aurora-mysql-tips) | [📙](#rds-aurora-mysql-gotchas-and-limitations) |
@@ -482,10 +483,8 @@ Learning and Career Development
   -	[Certified Solutions Architect Professional](https://aws.amazon.com/certification/certified-solutions-architect-professional/)
   -	[Certified DevOps Engineer Professional](https://aws.amazon.com/certification/certified-devops-engineer-professional/)
   - [Certified Security – Specialty](https://aws.amazon.com/certification/certified-security-specialty/)
-  - [Certified Big Data – Specialty](https://aws.amazon.com/certification/certified-big-data-specialty/)
   - [Certified Advanced Networking – Specialty](https://aws.amazon.com/certification/certified-advanced-networking-specialty/)
   - [Certified Machine Learning – Specialty](https://aws.amazon.com/certification/certified-machine-learning-specialty/)
-  - [Certified Alexa Skill Builder – Specialty](https://aws.amazon.com/certification/certified-alexa-skill-builder-specialty/)
   - [Certified Data Analytics – Specialty](https://aws.amazon.com/certification/certified-data-analytics-specialty/)
   - [Certified Database – Specialty](https://aws.amazon.com/certification/certified-database-specialty/)
 
@@ -799,7 +798,7 @@ S3
 	-	**Updates to objects:** If you overwrite or delete an object, you’re only guaranteed **eventual consistency**, i.e. the change will happen but you have no guarantee of when.
 	- 🔹For many use cases, treating S3 objects as **immutable** (i.e. deciding by convention they will be created or deleted but not updated) can greatly simplify the code that uses them, avoiding complex state management.
 	-	🔹Note that [until 2015](https://aws.amazon.com/about-aws/whats-new/2015/08/amazon-s3-introduces-new-usability-enhancements/), 'us-standard' region had had a weaker eventual consistency model, and the other (newer) regions were read-after-write. This was finally corrected — but watch for many old blogs mentioning this!
-	-	**Slow updates:** In practice, “eventual consistency” usually means within seconds, but expect rare cases of minutes or [hours](http://www.stackdriver.com/eventual-consistency-really-eventual/).
+	-	**Slow updates:** In practice, “eventual consistency” usually means within seconds, but expect rare cases of minutes or [hours](https://web.archive.org/web/20160324095125/http://www.stackdriver.com/eventual-consistency-really-eventual/).
 -	**S3 as a filesystem:**
 	-	In general S3’s APIs have inherent limitations that make S3 hard to use directly as a POSIX-style filesystem while still preserving S3’s own object format. For example, appending to a file requires rewriting, which cripples performance, and atomic rename of directories, mutual exclusion on opening files, and hardlinks are impossible.
 	-	[s3fs](https://github.com/s3fs-fuse/s3fs-fuse) is a FUSE filesystem that goes ahead and tries anyway, but it has performance limitations and surprises for these reasons.
@@ -1014,7 +1013,7 @@ Auto Scaling
 
 ### Auto Scaling Basics
 
--	📒 [Homepage](https://aws.amazon.com/autoscaling/) ∙ [User guide](http://docs.aws.amazon.com/autoscaling/latest/userguide/) ∙ [FAQ](https://aws.amazon.com/ec2/faqs/#Auto_Scaling) ∙ [Pricing](https://aws.amazon.com/autoscaling/pricing/) at no additional charge
+-	📒 [Homepage](https://aws.amazon.com/autoscaling/) ∙ [User guide](http://docs.aws.amazon.com/autoscaling/latest/userguide/) ∙ [FAQ](https://aws.amazon.com/ec2/faqs/) ∙ [Pricing](https://aws.amazon.com/autoscaling/pricing/) at no additional charge
 -	[**Auto Scaling Groups (ASGs)**](https://aws.amazon.com/autoscaling/) are used to control the number of instances in a service, reducing manual effort to provision or deprovision EC2 instances.
 -	They can be configured through [Scaling Policies](http://docs.aws.amazon.com/autoscaling/latest/userguide/policy_creating.html) to automatically increase or decrease instance counts based on metrics like CPU utilization, or based on a schedule.
 -	There are three common ways of using ASGs - dynamic (automatically adjust instance count based on metrics for things like CPU utilization), static (maintain a specific instance count at all times), scheduled (maintain different instance counts at different times of day or on days of the week).
@@ -1251,6 +1250,7 @@ Elastic IPs
 ### Elastic IP Gotchas and Limitations
 
 -	🔸There is [officially no way](https://forums.aws.amazon.com/thread.jspa?threadID=171550) to allocate a contiguous block of IP addresses, something you may desire when giving IPs to external users. Though when allocating at once, you may get lucky and have some be part of the same CIDR block. If this is important to you, you may want to [bring your own IP](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-byoip.html), which is more involved than this guide will go into.
+-	Unofficially, if you have Enterprise support, you can ask your account rep to try to allocate a block of Elastic IPs with a business justification. For example, some of [Duo's fixed ranges](https://help.duo.com/s/article/1337?language=en_US) are [blocks of AWS IP space reassigned to `AWS-DUOSECURITYINC`](https://search.arin.net/rdap/?query=54.241.191.128). This is a best effort request, expect a denial. 
 
 Glacier
 -------
@@ -1274,6 +1274,19 @@ Glacier
 -	🔸Getting files off Glacier is glacially slow (typically 3-5 hours or more).
 -	🔸Due to a fixed overhead per file (you pay per PUT or GET operation), uploading and downloading many small files on/to Glacier might be very expensive. There is also a 32k storage overhead per file. Hence it’s a good idea is to archive files before upload.
 -	💸Be aware of the per-object costs of archiving S3 data to Glacier. [It costs $0.05 per 1,000 requests](https://aws.amazon.com/s3/pricing/). If you have large numbers of S3 objects of relatively small size, [it will take time to reach a break-even point](https://alestic.com/2012/12/s3-glacier-costs/) (initial archiving cost versus lower storage pricing).
+
+Quicksight
+----------
+
+### Quicksight Basics
+
+-	📒 [Homepage](https://aws.amazon.com/quicksight/) ∙ [User guide](https://docs.aws.amazon.com/quicksight/latest/user/welcome.html) ∙ [Pricing](https://aws.amazon.com/quicksight/pricing/)
+
+[Back to top :arrow_up:](#table-of-contents)
+### Quicksight Gotchas and Limitations
+
+-	❗Out of the box Quicksight is not able to access tables that are linked to a Schema in the AWS Glue Schema Registry. This is because the auto-generated IAM role `aws-quicksight-service-role-v0` does not have the necessary permissions. You can't pick another role to be used but you can add more permissions to the role. The error message you will receive is an `SQL_EXCEPTION` with details `SYNTAX_ERROR: line 2:8: Column 'columnname' cannot be resolved` where `columnname` is the first column in your table.
+-	🔸Only QuickSight accounts that were created in the US East (N. Virginia) region can access the QuickSight Forum/Community. And you can only have a QuickSight account in one region per AWS account.
 
 RDS
 ---
@@ -1513,7 +1526,6 @@ DynamoDB
 -	🔸 DynamoDB doesn’t provide an easy way to bulk-load data (it is possible through [Data Pipeline](http://docs.aws.amazon.com/datapipeline/latest/DeveloperGuide/dp-importexport-ddb-part1.html)) and this has some [unfortunate consequences](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GuidelinesForTables.html#GuidelinesForTables.AvoidExcessivePTIncreases). Since you need to use the regular service APIs to update existing or create new rows, it is common to temporarily turn up a destination table’s write throughput to speed import. But when the table’s write capacity is increased, DynamoDB may do an irreversible split of the partitions underlying the table, spreading the total table capacity evenly across the new generation of tables. Later, if the capacity is reduced, the capacity for each partition is also reduced but the total number of partitions is not, leaving less capacity for each partition. This leaves the table in a state where it much easier for hotspots to overwhelm individual partitions.
 -	🔸 It is important to make sure that DynamoDB [resource limits](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-data-types) are compatible with your dataset and workload. For example, the maximum size value that can be added to a DynamoDB table is 400 KB (larger items can be stored in S3 and a URL stored in DynamoDB).
 -	🔸 Dealing with **time series data** in DynamoDB can be challenging. A global secondary index together with down sampling timestamps can be a possible solution as explained [here](https://blogs.aws.amazon.com/bigdata/post/Tx3KPZDXIBJEQ4B/Scaling-Writes-on-Amazon-DynamoDB-Tables-with-Global-Secondary-Indexes).
--	🔸 DynamoDB does [not allow](https://forums.aws.amazon.com/thread.jspa?threadID=90137) an empty string as a valid attribute value. The most common work-around is to use a substitute value instead of leaving the field empty.
 -	🔸 When setting up [fine grained policies](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/specifying-conditions.html) for access to DynamoDB tables, be sure to include their secondary indices in the policy document as well.
 
 
@@ -1548,7 +1560,7 @@ ECS
 [Back to top :arrow_up:](#table-of-contents)
 ### ECS Alternatives and Lock-in
 
--	[Kubernetes](https://kubernetes.io): Extensive container platform. Available as a hosted solution on Google Cloud (https://cloud.google.com/container-engine/) and AWS (https://tectonic.com/). AWS has a Kubernetes Quickstart (https://aws.amazon.com/quickstart/architecture/heptio-kubernetes/) developed in collaboration with Heptio.
+-	[Kubernetes](https://kubernetes.io): Extensive container platform. Available as a hosted solution on [Google Cloud](https://cloud.google.com/kubernetes-engine), [AWS](https://aws.amazon.com/eks/), [Azure](https://azure.microsoft.com/en-us/services/kubernetes-service/), [DigitalOcean](https://www.digitalocean.com/products/kubernetes/), and [OpenShift](https://www.redhat.com/en/technologies/cloud-computing/openshift).
 -	[Nomad](https://www.nomadproject.io/): Orchestrator/Scheduler, tightly integrated in the HashiCorp stack (Consul, Vault, etc).
 
 🚧 [*Please help expand this incomplete section.*](CONTRIBUTING.md)
@@ -1562,7 +1574,7 @@ EKS
 - See the [Containers and AWS](#containers-and-aws) section for more context on containers.
 - EKS is AWS's solution to hosting Kubernetes natively on AWS. It is not a replacement for ECS directly but is in response to the large market dominance of Kubernetes.
 - EKS does not launch EC2 nodes and would have to be configured and setup either manually or via Cloudformation (or other automation solution)
-- EKS management is done through a utility called kubectl, and with Kube configuration files. These files will need to be configured to speak with the K8s Master with a certificate and URL. The AWS CLI can autogenerate the configuration file that kubect requires for communicating with the cluster.<sup>[1](#user-content-eks-aws-cli-create-kubeconfig)</sup>
+- EKS management is done through a utility called kubectl, and with Kube configuration files. These files will need to be configured to speak with the K8s Master with a certificate and URL. The AWS CLI can autogenerate the configuration file that kubectl requires for communicating with the cluster.<sup>[1](#user-content-eks-aws-cli-create-kubeconfig)</sup>
 - EKS authentication is integrated with IAM roles/permissions. The AWS CLI has an integrated sub-command for generating authentication tokens.<sup>[2](#user-content-eks-aws-cli-get-token)</sup> This was formerly done via a custom plugin for kubectl called [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) (formerly heptio-authenticator-aws).
 - EKS provides [Calico](https://docs.aws.amazon.com/eks/latest/userguide/calico.html) from Tigera for securing workloads within a cluster using Kubernetes network policy.
 
@@ -1632,15 +1644,15 @@ Lambda
 -	The idea behind 'serverless' is that users don't manage provisioning, scaling, or maintenance of the physical machines that host their application code. With Lambda, the machine that actually executes the user-defined function is abstracted as a ['container'](http://docs.aws.amazon.com/lambda/latest/dg/lambda-introduction.html). When defining a Lambda function, users are able to declare the amount of memory available to the function, which directly affects the physical hardware specification of the Lambda container.
 -	Changing the amount of memory available to your Lambda functions also affects the amount of [CPU power](https://aws.amazon.com/lambda/faqs/) available to it.
 -	While AWS does not offer hard guarantees around container reuse, in general it can be expected that an unaltered Lambda function will reuse a warm (previously used) container if called shortly after another invocation. Users can use this as a way to optimize their functions by smartly caching application data on initialization.
--	A Lambda that hasn't been invoked in some time may not have any warm containers left. In this case, the Lambda system will have to load and initialize the Lambda code in a 'cold start' scenario, which can add significant latency to Lambda invocations.  Lambda cold start performance [has improved significantly over the 2018-2019 timeframe](https://levelup.gitconnected.com/aws-lambda-cold-start-language-comparisons-2019-edition-%EF%B8%8F-1946d32a0244) and is now typically in the range of 200-500 ms for a simple function depending on the language runtime.  
--	Lambda functions running insides of VPCs have also seen [recent improvements](https://aws.amazon.com/blogs/compute/announcing-improved-vpc-networking-for-aws-lambda-functions/) to cold start times.  Previously these VPC-hosted functions would have cold starts of ~15 seconds; now those same functions cold start in < 1 second.   
+-	A Lambda that hasn't been invoked in some time may not have any warm containers left. In this case, the Lambda system will have to load and initialize the Lambda code in a 'cold start' scenario, which can add significant latency to Lambda invocations.  Lambda cold start performance [has improved significantly over the 2018-2019 timeframe](https://levelup.gitconnected.com/aws-lambda-cold-start-language-comparisons-2019-edition-%EF%B8%8F-1946d32a0244) and is now typically in the range of 200-500 ms for a simple function depending on the language runtime.
+-	Lambda functions running insides of VPCs have also seen [recent improvements](https://aws.amazon.com/blogs/compute/announcing-improved-vpc-networking-for-aws-lambda-functions/) to cold start times.  Previously these VPC-hosted functions would have cold starts of ~15 seconds; now those same functions cold start in < 1 second.
 -	There are a few strategies to avoiding or mitigating cold starts.  [Provisioned concurrency](https://aws.amazon.com/blogs/aws/new-provisioned-concurrency-for-lambda-functions/) was announced at re:invent 2019 and is an effective means to eliminating cold starts. Other techniques include keeping containers warm by periodic triggering and favoring lightweight runtimes such as Node as opposed to Java.
 -	Lambda is integrated with AWS CloudWatch and provides a logger at runtime that publishes CloudWatch events.
 -	Lambda offers out-of-the-box opt-in support for AWS X-Ray. X-Ray can help users diagnose Lambda issues by offering in-depth analysis of their Lambda's execution flow. This is especially useful when investigating issues calling other AWS services as X-Ray gives you a detailed and easy-to-parse [visualization of the call graph](http://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html#lambda-service-map).
 -	Using [timed CloudWatch events](http://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions), users can use Lambda to run periodic jobs in a cron-like manner.
 -	Events sent to Lambda that fail processing can be managed using a [Dead Letter Queue (DLQ) in SQS.](http://docs.aws.amazon.com/lambda/latest/dg/dlq.html)
 -	More on serverless:
-	-	[Martin Fowler's thoughts.](http://martinfowler.com/articles/serverless.html)
+	-	[Mike Roberts's thoughts on martinfowler.com.](http://martinfowler.com/articles/serverless.html)
 	-	[AWS Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model), a simplification built on top of CloudFormation that can help to define, manage, and deploy serverless applications using Lambda.
 	-	[Serverless](https://github.com/serverless/serverless), one of the most popular frameworks for building serverless applications using AWS Lambda and other serverless compute options.
 	-	[Other helpful frameworks.](https://github.com/anaibol/awesome-serverless#frameworks)
